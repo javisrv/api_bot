@@ -1,0 +1,24 @@
+# Usa una imagen de Python
+FROM python:3.9-slim
+
+# Instala las dependencias del sistema necesarias
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copia solo los archivos necesarios
+COPY requirements.txt /app/requirements.txt
+COPY db /app/db
+
+# Establece el directorio de trabajo
+WORKDIR /app
+
+# Instala las dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Añade el directorio actual al PYTHONPATH
+ENV PYTHONPATH=/app:$PYTHONPATH
+
+# Ejecuta el script de inicialización
+CMD ["python"]
