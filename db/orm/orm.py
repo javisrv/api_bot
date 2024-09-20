@@ -3,6 +3,7 @@ import os
 from sqlalchemy import create_engine, select, desc, and_, or_, not_
 from sqlalchemy.orm import sessionmaker
 from db.orm.orm_models import Base, UsrSession, UsrMessages
+from utils.logger import logger
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,7 +18,6 @@ class PostgresOrm:
     
     def _create_tables(self):
         Base.metadata.create_all(self.engine)
-        print("Tablas creadas correctamente")
 
     def save(self, data_model):
         start_time = time.time()
@@ -25,7 +25,9 @@ class PostgresOrm:
         try:
             session.add(data_model)
             session.commit()
+            logger.info(f"session_id: {data_model.id} guardada exitosamente en {round(time.time() - start_time, 2)} segundos.")
         except Exception as e:
+            logger.error("Error al intentar guardar los datos: %s", e)
             session.rollback()
             raise e
         finally:

@@ -1,0 +1,4 @@
+{
+"rag": "Dado el siguiente mensaje del usuario {input}, respondé siempre con un chiste en el siguiente idioma:{language}.",
+"get_language": "Dado el siguiente mensaje del usuario {input}, retorná un json con las claves 'language' y 'translate'. 'language' es idioma del mensaje, el cual debe escribir en español y 'translate' es la traducción al español de dicho mensaje"
+}

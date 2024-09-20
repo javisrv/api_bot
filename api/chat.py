@@ -1,6 +1,7 @@
 from models.dataclasses import ChatRequest, ChatResponse
 from db.orm.orm import db_engine
 from db.orm.orm_models import UsrSession, UsrMessages
+from api.graph import load_graph
 from utils.logger import logger
 
 
@@ -12,17 +13,24 @@ def get_answer(request: ChatRequest):
         db_engine.save(session)
     else:
         pass 
+    
+    inputs = {
+        "input": request.input
+    }
+
+    answer = load_graph().invoke(inputs)
+    logger.info(f"Respuesta final del bot: {answer['agent_outcome']}")
     usr_messages = UsrMessages(
             session_id=request.session_id,
-            user_message=request.input,
-            answer="hola Javier!",
-            intent="saludo",
-            tokens_used={"enviados": 123, "retornados": 256, "totales": 379},
+            user_message=answer["input"],
+            answer=answer["agent_outcome"],
+            language=answer["language"],
+            tokens_used=answer["tokens_used"],
             state={"primer saludo": "holaaaa"}
             )
     db_engine.save(usr_messages)
 
     return ChatResponse(
             session_id=request.session_id,
-            respuesta="hola Javier!"
+            respuesta=answer["agent_outcome"]
         )

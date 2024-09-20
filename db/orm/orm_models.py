@@ -36,7 +36,7 @@ class UsrMessages(Base):
     ts = Column(DateTime, default=func.now(), nullable=False)
     user_message = Column(String, nullable=False)
     answer = Column(String, nullable=False)
-    intent = Column(String, nullable=False)
+    language = Column(String, nullable=False)
     tokens_used = Column(JSON, nullable=False)
     state = Column(JSON, nullable=False)
 
@@ -50,7 +50,7 @@ class UsrMessages(Base):
             "ts": self.ts,
             "user_message": self.user_message,
             "answer": self.answer,
-            "intent": self.intent,
+            "language": self.language,
             "tokens_used": self.tokens_used,
             "state": self.state,
         }

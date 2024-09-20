@@ -22,3 +22,7 @@ class ChatResponse(BaseModel):
         default=None,
         description="ID de la Sesión"
     )
+
+class Language(BaseModel):
+        language: str = Field(description="idioma del mensaje del usuario")
+        translate: str = Field(description="traducción al español del mensaje del usuario")
