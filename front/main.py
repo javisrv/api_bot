@@ -1,7 +1,7 @@
 import streamlit as st
 from functions import write_stream, get_response
 
-st.title("Galicia Smart Advisor")
+st.title("Pi Consulting challenge")
 
 
 if "messages" not in st.session_state:
