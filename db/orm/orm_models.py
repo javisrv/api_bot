@@ -34,9 +34,10 @@ class UsrMessages(Base):
     id = Column(BigInteger, primary_key=True, autoincrement=True, nullable=False)
     session_id = Column(UUID, ForeignKey('sessions.id'), nullable=False)
     ts = Column(DateTime, default=func.now(), nullable=False)
+    user_name = Column(String, nullable=True)
     user_message = Column(String, nullable=False)
     answer = Column(String, nullable=False)
-    language = Column(String, nullable=False)
+    language = Column(String, nullable=True)
     tokens_used = Column(JSON, nullable=False)
     state = Column(JSON, nullable=False)
 
@@ -48,6 +49,7 @@ class UsrMessages(Base):
             "id": self.id,
             "session_id": self.session_id,
             "ts": self.ts,
+            "user_name": self.user_name,
             "user_message": self.user_message,
             "answer": self.answer,
             "language": self.language,

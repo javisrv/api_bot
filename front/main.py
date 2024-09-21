@@ -10,6 +10,7 @@ if "messages" not in st.session_state:
                                       "content": """¡Hola! Soy tu asistente conversacional para el challenge de Pi Consulting 😊.\n
 Estoy para ayudarte a responder cualquier duda que tengas.\n
 ¡Preguntame todo lo que necesites!\n
+Para empezar me encantaría que me dijeras tu nombre o pseudónimo.
 """})
 
 if "conversation_id" not in st.session_state:

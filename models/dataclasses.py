@@ -26,3 +26,6 @@ class ChatResponse(BaseModel):
 class Language(BaseModel):
         language: str = Field(description="idioma del mensaje del usuario")
         translate: str = Field(description="traducción al español del mensaje del usuario")
+
+class Name(BaseModel):
+        user_name: str = Field(description="Nombre del usuario")

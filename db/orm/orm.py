@@ -33,39 +33,35 @@ class PostgresOrm:
         finally:
             session.close()
 
-    def read(self, session_id, model):
-        start_time = time.time()
-        session = self.Session()
+    def get_last_message_dict(self):
+        session = db_engine.Session()  # Crear sesión con la base de datos
         try:
-            result = session.execute(select(model).where(model.id == session_id))
-            result = result.fetchone()[0]
+            # Consulta para obtener la última fila de la tabla messages ordenada por timestamp
+            result = session.execute(
+                select(UsrMessages)
+                .order_by(UsrMessages.ts.desc())  # Ordenar de forma descendente por ts (timestamp)
+                .limit(1)  # Limitar a una sola fila
+            )
+            
+            # Obtener el primer resultado
+            last_message = result.scalar_one_or_none()
+
+            # Si existe un resultado, convertirlo a diccionario usando el método to_dict()
+            if last_message:
+                return last_message.to_dict()
+            else:
+                return {}  # Si no hay resultados, retornar un diccionario vacío
         except Exception as e:
-            result = None
+            logger.error("Error al obtener el último mensaje: %s", e)
+            return {}
         finally:
             session.close()
-        return result
-    
-    def read_messages(self, session_id, model):
-        start_time = time.time()
-        session = self.Session()
-        try:
-            result = session.execute(select(model).where(model.session_id == session_id))
-            result = [row[0].to_dict() for row in result.fetchall()]
-        except Exception as e:
-            result = None
-        finally:
-            session.close()
-        return result
 
     def retrieve_history(self, session_id, model, exclude_intents=None):
         start_time = time.time()
         session = self.Session()
         try:
             conditions = [model.session_id == session_id]
-            
-            if exclude_intents:  # Excluir intents de intents_list
-                intent_conditions = [model.intent == intent for intent in exclude_intents]
-                conditions.append(not_(or_(*intent_conditions)))
             
             result = session.execute(
                 select(model)
@@ -75,11 +71,12 @@ class PostgresOrm:
             )
             
             previous_history = [row[0].to_dict() for row in result.fetchall()]
+            logger.info(f"[orm][retrieve_history] ID: {session_id} retrieved history successfully in {round(time.time() - start_time, 2)} seconds.")
         except Exception as e:
+            logger.error("[orm][retrieve_history] Error while retrieving the history: %s", e)
             previous_history = []
         finally:
             session.close()
-        
         return previous_history
 
     def close(self):
