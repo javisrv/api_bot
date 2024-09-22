@@ -1,15 +1,16 @@
-import uuid
 import os
+from dotenv import load_dotenv
+import uuid
 from sqlalchemy import Column, DateTime, ForeignKey, String, BigInteger
 from sqlalchemy.sql import func
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.dialects.postgresql import UUID, JSON
-from dotenv import load_dotenv
 
 load_dotenv()
 API_VERSION = os.getenv('API_VERSION')
 
 Base = declarative_base()
+
 
 class UsrSession(Base):
     __tablename__ = "sessions"
@@ -56,5 +57,3 @@ class UsrMessages(Base):
             "tokens_used": self.tokens_used,
             "state": self.state,
         }
-
-#product_models = {"answer_hogar": AnswerHogar}
