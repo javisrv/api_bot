@@ -28,7 +28,7 @@ def create_vdb(path_doc, model, path_db):
        length_function = len
        )
     chunks = text_splitter.split_documents(data)
-    embeddings = get_model(model_version=EMBEDDING_NAME_MODEL, model_type="embeddings", dimensions=EMBEDDING_SIZE_MODEL)
+    embeddings = get_model(model_type="embeddings")
     vdb = FAISS.from_documents(chunks, embeddings)
     vdb.save_local(path_db)
 
