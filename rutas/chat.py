@@ -35,5 +35,5 @@ router_chat = APIRouter(prefix="/chat")
 def interact(req: ChatRequest):
     start_time = time.time()
     res = get_answer(req)
-    logger.info(f"Interacción con el LLM {res.session_id} procesada en {round(time.time() - start_time, 2)} segundos.")
+    logger.info(f"Interacción con ID '{res.session_id}' procesada en {round(time.time() - start_time, 2)} segundos.")
     return res

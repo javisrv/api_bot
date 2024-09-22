@@ -46,6 +46,7 @@ class CallChain:
             - La salida se parsea y se incorpora de vuelta en `inputs` bajo la clave 'agent_outcome'.
             - Se actualiza o inicializa la clave 'partial_states' en `inputs` si no está presente.
         """
+        logger.debug("Entrando en el 'run'.")
         start_time = time.time()
         prompt, parser = get_prompt(inputs, prompt_name, pydantic_object)
         model = get_model(model_type=model_type,temperature=temperature, seed=seed)
@@ -57,7 +58,8 @@ class CallChain:
             inputs["partial_states"] = partial_state
         else:
             inputs["partial_states"].update(partial_state)
-        logger.info(f"Node {prompt_name} executed in {round(time.time() - start_time, 2)} seconds.")
+        logger.info(f"Node {prompt_name} ejecutado en {round(time.time() - start_time, 2)} segundos.")
+        logger.debug(f"Respuesta de 'run' {inputs["agent_outcome"]}")
         return inputs
     
     @staticmethod
@@ -79,15 +81,16 @@ class CallChain:
             - La función verifica si ya existe un 'user_name' en los inputs. Si no está presente, se ejecuta un prompt para solicitar el nombre.
             - Si el prompt no logra obtener el nombre, se asigna un mensaje predeterminado en 'agent_outcome'.
         """
-        logger.debug("Entrando en el nodo 'request_name'")
-        if not inputs["user_name"]:
-            CallChain.run(inputs, prompt_name="get_name", pydantic_object=Name) #model_type="chat", 
-            if not inputs["agent_outcome"]["user_name"]:
+        logger.debug("Entrando en el nodo 'request_name'.")
+        if not inputs["user_name"]: # Si no tengo un nombre de usuario, entonces parseo la respuesta del usuario
+            CallChain.run(inputs, prompt_name="get_name", pydantic_object=Name)
+            if not inputs["agent_outcome"]["user_name"]: # Si no pude extraer el nombre de usuario, entonces es un no entendido
                 inputs["agent_outcome"] = "¡Uy, Perdoname pero no te entendí! ¿Me podés decir tu nombre? Puede ser un nombre fantasía si querés."
             else:
-                inputs["user_name"] = inputs["agent_outcome"]["user_name"]
+                inputs["user_name"] = inputs["agent_outcome"]["user_name"] # Si pude extraer un nombre, entonces lo guardo en el diccionario de 'inputs'
             logger.debug(f"Respuesta del Nodo 'request_name': {inputs["agent_outcome"]}")
-        logger.debug(f"El nodo 'request_name' no hizo nada.")
+        else:
+            logger.debug(f"El nodo 'request_name' no hizo nada.") # Si ya tengo un nombre de usuario, paso directamente al siguiente nodo
         return inputs
     
     @staticmethod
@@ -117,27 +120,28 @@ class CallChain:
             - Si la entrada no está traducida ('input_translated'), se vuelve a ejecutar el prompt para obtener el idioma y traducir la entrada.
         """
         logger.debug("Entrando en el nodo 'request_language'")
-        if not inputs["language"]:
-            if not inputs["partial_states"]:
-                CallChain.run(inputs, prompt_name="get_language", pydantic_object=Language) #model_type="chat"
-                if not inputs["agent_outcome"]["language"]:
+        if not inputs["language"]: # Si no tengo un idioma
+            if not inputs["partial_states"]: # Si no hubo interacción en el nodo 'request_name', entonces parseo la respuesta del usuario
+                CallChain.run(inputs, prompt_name="get_language", pydantic_object=Language)
+                if not inputs["agent_outcome"]["language"]: # Si no pude extraer un idioma, entonces es un no entendido
                     inputs["agent_outcome"] = "¡Uy, Perdoname pero no te entendí! ¿Me lo podés volver a escribir?"
-                else:
+                else: # Si pude extraer un idioma y mensaje traducidos al español, entonces los guardo en el diccionario de 'inputs'
                     inputs["input_translated"] = inputs["agent_outcome"]["translate"]
-                    inputs["language"] = inputs["agent_outcome"]["language"]
-            else:
+                    inputs["language"] = inputs["agent_outcome"]["language"].lower()
+            else: # Si hubo interacción en el nodo 'request_name' entonces solicito al usuario un mensaje
                 inputs["agent_outcome"] = f"¡Excelente, mucho gusto {inputs["user_name"].capitalize()}! Preguntame lo que quieras."
                 partial_state = {"request_language": inputs["agent_outcome"]}
                 inputs["partial_states"].update(partial_state)
             logger.debug(f"Respuesta del Nodo 'request_language': {inputs["agent_outcome"]}")
-        elif not inputs["input_translated"]:
-            CallChain.run(inputs, prompt_name="get_language", pydantic_object=Language) #model_type="chat"
-            if not inputs["agent_outcome"]["language"]:
+        elif not inputs["input_translated"]: # Si tengo idioma, parseo el mensaje la respuesta del usuario
+            CallChain.run(inputs, prompt_name="get_language", pydantic_object=Language)
+            if not inputs["agent_outcome"]["language"]: # Si no pude extraer un idioma, entonces es un no entendido
                 inputs["agent_outcome"] = "¡Uy, Perdoname pero no te entendí! ¿Me lo podés volver a escribir?"
-            else:
+            else: # Si pude extraer un idioma y mensaje traducidos al español, entonces los guardo en el diccionario de 'inputs'
                 inputs["input_translated"] = inputs["agent_outcome"]["translate"]
-                inputs["language"] = inputs["agent_outcome"]["language"]
-        logger.debug(f"El nodo 'request_language' no hizo nada.")
+                inputs["language"] = inputs["agent_outcome"]["language"].lower()
+        else:
+            logger.debug(f"El nodo 'request_language' no hizo nada.")
         return inputs
     
     @staticmethod
@@ -162,7 +166,6 @@ class CallChain:
         """
         logger.debug("Entrando en el nodo 'rag'")
         inputs["rag"]=rag(inputs)
-        logger.debug(f"Información recuperada por el RAG: {inputs["rag"]}")
         CallChain.run(inputs, prompt_name="rag") # model_type="chat"
         logger.debug(f"Respuesta del Nodo 'rag': {inputs["agent_outcome"]}")
         return inputs
@@ -187,6 +190,10 @@ class CallChain:
             - El nodo 'personality' es ejecutado para generar una respuesta relevante relacionada con la personalidad del LLM.
         """
         logger.debug("Entrando en el nodo 'personality'")
-        CallChain.run(inputs, prompt_name="personality")
+        logger.debug(f"La respuesta debe ser en el idioma: '{inputs['language']}'")
+        if inputs["language"] == "español":
+            CallChain.run(inputs, prompt_name="personality_esp")
+        else:
+            CallChain.run(inputs, prompt_name="personality")
         logger.debug(f"Respuesta del Nodo 'personality': {inputs["agent_outcome"]}")
         return inputs

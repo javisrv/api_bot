@@ -1,13 +1,13 @@
 import os
 from dotenv import load_dotenv
-from utils.logger import logger
-from typing import Dict, Union, Any
 import json
+from typing import Dict, Union, Any
 from langchain_openai  import ChatOpenAI, OpenAIEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain.callbacks import get_openai_callback
 from langchain_community.vectorstores import FAISS
+from utils.logger import logger
 
 load_dotenv()
 PATH_TEMPLATES = os.getenv('PATH_TEMPLATES')
@@ -18,7 +18,7 @@ EMBEDDING_NAME_MODEL = os.getenv('EMBEDDING_NAME_MODEL')
 EMBEDDING_SIZE_MODEL = os.getenv('EMBEDDING_SIZE_MODEL')
 
 
-def get_model(model_type, temperature, seed, model_chat=CHAT_NAME_MODEL, model_embedding=EMBEDDING_NAME_MODEL, dimensions=EMBEDDING_SIZE_MODEL) -> Union[ChatOpenAI, OpenAIEmbeddings]:
+def get_model(model_type, temperature=None, seed=None, model_chat=CHAT_NAME_MODEL, model_embedding=EMBEDDING_NAME_MODEL, dimensions=EMBEDDING_SIZE_MODEL) -> Union[ChatOpenAI, OpenAIEmbeddings]:
     """
     Obtiene un modelo de chat/embedding según el tipo de 'model_type' especificado.
 
@@ -37,10 +37,12 @@ def get_model(model_type, temperature, seed, model_chat=CHAT_NAME_MODEL, model_e
         - El modelo de embeddings utiliza el nombre y el tamaño de los embeddings definidos en las constantes `EMBEDDING_NAME_MODEL` y `EMBEDDING_SIZE_MODEL`.
         - El modelo de chat utiliza el nombre del modelo y la semilla definidos en las constantes `CHAT_NAME_MODEL` y `CHAT_SEED`.
     """
+    logger.debug(f"Entrando en la función 'get_model'.")
     if model_type == "embeddings":
         model = OpenAIEmbeddings(model=model_embedding, dimensions=dimensions)
     else:
         model = ChatOpenAI(model=model_chat, temperature=temperature, seed=seed)
+    logger.debug(f"Modelo de '{model_type}' instanciado.")
     return model
 
 
@@ -58,6 +60,7 @@ def get_prompt(inputs: dict, prompt_name: str, pydantic_object=None) -> tuple:
             - str: La plantilla de prompt formateada.
             - Optional[JsonOutputParser]: Un objeto JsonOutputParser si se proporciona un pydantic_object, de lo contrario None.
     """
+    logger.debug(f"Entrando en la función 'get_prompt'.")
     with open(PATH_TEMPLATES, "r", encoding="utf-8") as file:
         templates = json.load(file)
     if pydantic_object:
@@ -70,6 +73,7 @@ def get_prompt(inputs: dict, prompt_name: str, pydantic_object=None) -> tuple:
     else:
         prompt_template = PromptTemplate.from_template(template=templates[prompt_name])
         prompt = prompt_template.format(**inputs)
+    logger.debug(f"Prompt instanciado.")
     return prompt, parser if pydantic_object else None
 
 
@@ -88,13 +92,16 @@ def invoke_llm(model: ChatOpenAI, prompt: str, parser: JsonOutputParser, inputs:
             - output: La salida generada por el modelo de lenguaje.
             - cb: Un objeto de callback que proporciona información sobre la invocación (como el uso de tokens).
     """
+    logger.debug(f"Entrando en la función 'invoke_llm'.")
     with get_openai_callback() as cb:
         if parser:
             chain = prompt | model | parser
             output = chain.invoke({"input": inputs["input"]})
+            logger.debug(f"Respuesta del LLM instanciada.")
             return output, cb
         else:
             output = model.invoke(prompt.format(**inputs))
+            logger.debug(f"Respuesta del LLM instanciada.")
             return output, cb
 
 
@@ -109,9 +116,11 @@ def rag(inputs: dict) -> str:
     Returns:
         str: El contenido de la página del documento más similar encontrado en la base de datos.
     """
+    logger.debug(f"Entrando en la función 'rag'.")
     embeddings = get_model(model_type="embeddings")
     vdb = FAISS.load_local(PATH_DB, embeddings, allow_dangerous_deserialization = True)
     doc = vdb.similarity_search(inputs["input"], k = 1)
+    logger.debug(f"Información recuperada por el RAG: '{doc[0].page_content}'")
     return doc[0].page_content
 
 
@@ -126,6 +135,7 @@ def parse_tokens(inputs: Dict[str, Any], cb) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: El diccionario de entrada actualizado con la información del uso de tokens.
     """
+    logger.debug(f"Entrando en la función 'parse_tokens'.")
     token_usage = {
         "completion_tokens": cb.completion_tokens,
         "prompt_tokens": cb.prompt_tokens,
@@ -137,6 +147,7 @@ def parse_tokens(inputs: Dict[str, Any], cb) -> Dict[str, Any]:
         inputs["tokens_used"]["total_tokens"] += token_usage["total_tokens"]
     else:
         inputs["tokens_used"] = token_usage
+    logger.debug(f"Tokens calculados: {inputs['tokens_used']}")
     return inputs
 
 
@@ -154,6 +165,7 @@ def format_order_history(messages: list) -> list:
               de la IA, ordenados de manera que las respuestas de la IA aparecen antes
               de los mensajes del usuario en la lista final.
     """
+    logger.debug(f"Entrando en la función 'format_order_history'.")
     formatted_history = []
     for item in messages:
         # Formatear el mensaje del usuario y la respuesta de la IA
@@ -165,6 +177,7 @@ def format_order_history(messages: list) -> list:
         if i + 1 < len(formatted_history):
             reordered_history.insert(0, formatted_history[i + 1])  # Respuesta de la IA
             reordered_history.insert(0, formatted_history[i])      # Mensaje del usuario
+    logger.debug(f"Historial ordenado y formateado.")
     return reordered_history
 
 
