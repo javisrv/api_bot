@@ -1,16 +1,32 @@
-from models.dataclasses import ChatRequest, ChatResponse
+from api.graph import load_graph
 from db.orm.orm import db_engine
 from db.orm.orm_models import UsrSession, UsrMessages
+from models.dataclasses import ChatRequest, ChatResponse
 from utils.auxiliar_functions import format_order_history
-from api.graph import load_graph
 from utils.logger import logger
 
 
-def get_answer(request: ChatRequest):
-    logger.debug("Entrando en 'get_answer'")
+def get_answer(request: ChatRequest) -> ChatResponse:
+    """
+    Procesa una solicitud de interacción con el LLM y genera una respuesta.
+
+    Esta función maneja la lógica para procesar una solicitud de chat. Si no existe una sesión previa, 
+    crea una nueva y genera un mensaje de bienvenida. Si la sesión ya existe, recupera el historial de mensajes 
+    y utiliza los datos del último mensaje para personalizar la respuesta.
+
+    Parámetros:
+        request (ChatRequest): El objeto que contiene los detalles de la solicitud del chat, 
+        incluyendo el ID de la sesión y el mensaje del usuario.
+
+    Retorno:
+        ChatResponse: Un objeto que contiene el ID de la sesión y la respuesta generada por el bot.
+    """
+    logger.debug("Entrando en la función 'get_answer'.")
+    # Si no existe la sesión, entonces se crea una.
     if not request.session_id:
         session = UsrSession()
         request.session_id = session.id
+        logger.info("Sesión con ID %s creada.", request.session_id)
         db_engine.save(session)
         user_name = None
         language = None
@@ -23,8 +39,10 @@ def get_answer(request: ChatRequest):
                                         Para empezar me encantaría que me dijeras tu nombre o pseudónimo.
                                         """
                             }]
+    # Si existe la sesión, se recuperan los datos almmacenados hasta el momento
+        # en conjunto con el historial de los últimos 5 mensajes. 
     else:
-        logger.info("Session %s requested.", request.session_id)
+        logger.info("Sesión con ID %s recuperada.", request.session_id)
         messages = db_engine.retrieve_history(request.session_id, UsrMessages)
         if messages:
             history_message = format_order_history(messages)
@@ -33,6 +51,7 @@ def get_answer(request: ChatRequest):
         last_message = db_engine.get_last_message_dict()
         user_name = last_message["user_name"]
         language = last_message["language"]
+
     inputs = {
         "input": request.input,
         "input_translated": None,
@@ -42,8 +61,9 @@ def get_answer(request: ChatRequest):
         "partial_states": None
     }
 
+    logger.debug(f"Entrando en el flujo de nodos.")
     answer = load_graph().invoke(inputs)
-    logger.info(f"Respuesta final del bot: {answer['agent_outcome']}")
+    logger.debug(f"Respuesta final del bot: {answer['agent_outcome']}")
     usr_messages = UsrMessages(
             session_id=request.session_id,
             user_name=answer["user_name"],
@@ -53,6 +73,7 @@ def get_answer(request: ChatRequest):
             tokens_used=answer["tokens_used"],
             state=answer["partial_states"]
             )
+    logger.debug(f"Guardando datos en la tabla 'messages'")
     db_engine.save(usr_messages)
 
     return ChatResponse(
