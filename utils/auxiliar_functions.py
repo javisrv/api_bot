@@ -1,6 +1,8 @@
 import os
 from dotenv import load_dotenv
 import json
+from tenacity import retry, stop_after_attempt, wait_fixed, RetryError
+from tenacity import timeout
 from typing import Dict, Union, Any
 from langchain_openai  import ChatOpenAI, OpenAIEmbeddings
 from langchain.prompts import PromptTemplate
@@ -77,6 +79,8 @@ def get_prompt(inputs: dict, prompt_name: str, pydantic_object=None) -> tuple:
     return prompt, parser if pydantic_object else None
 
 
+@retry(stop=stop_after_attempt(2), wait=wait_fixed(2), reraise=True)
+@timeout(30)  # Límite de tiempo de 30 segundos por intento
 def invoke_llm(model: ChatOpenAI, prompt: str, parser: JsonOutputParser, inputs: dict) -> tuple:
     """
     Invoca un LLM con un prompt dado y procesa la salida mediante un parser opcional.
@@ -93,16 +97,24 @@ def invoke_llm(model: ChatOpenAI, prompt: str, parser: JsonOutputParser, inputs:
             - cb: Un objeto de callback que proporciona información sobre la invocación (como el uso de tokens).
     """
     logger.debug(f"Entrando en la función 'invoke_llm'.")
-    with get_openai_callback() as cb:
-        if parser:
-            chain = prompt | model | parser
-            output = chain.invoke({"input": inputs["input"]})
-            logger.debug(f"Respuesta del LLM instanciada.")
-            return output, cb
-        else:
-            output = model.invoke(prompt.format(**inputs))
-            logger.debug(f"Respuesta del LLM instanciada.")
-            return output, cb
+    
+    try:
+        with get_openai_callback() as cb:
+            if parser:
+                chain = prompt | model | parser
+                output = chain.invoke({"input": inputs["input"]})
+                logger.debug(f"Respuesta del LLM instanciada.")
+                return output, cb
+            else:
+                output = model.invoke(prompt.format(**inputs))
+                logger.debug(f"Respuesta del LLM instanciada.")
+                return output, cb
+    except RetryError as e:
+        logger.error(f"Fallo tras varios intentos: {e}")
+        raise e  # Lanza el error tras agotar los intentos
+    except Exception as e:
+        logger.error(f"Error al invocar el LLM: {e}")
+        raise e
 
 
 def rag(inputs: dict) -> str:

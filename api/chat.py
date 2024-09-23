@@ -62,7 +62,13 @@ def get_answer(request: ChatRequest) -> ChatResponse:
     }
 
     logger.debug(f"Entrando en el flujo de nodos.")
-    answer = load_graph().invoke(inputs)
+    try:
+        answer = load_graph().invoke(inputs)
+    except Exception as e:
+        logger.error(f"Error al invocar el LLM: {e}")
+        answer = inputs
+        answer["agent_outcome"] = "Perdón, tuvimos un problema técnico. Por favor, intentá más tarde."
+        
     logger.debug(f"Respuesta final del bot: {answer['agent_outcome']}")
     usr_messages = UsrMessages(
             session_id=request.session_id,
