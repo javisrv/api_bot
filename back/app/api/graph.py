@@ -30,7 +30,7 @@ def load_graph() -> StateGraph:
 
     workflow.add_node("request_language", call_chain.request_language)  
 
-    workflow.add_node("rag", call_chain.rag)  
+    workflow.add_node("call_rag", call_chain.call_rag)  
 
     workflow.add_node("personality", call_chain.personality)  
     
@@ -49,12 +49,12 @@ def load_graph() -> StateGraph:
         "request_language",  
         edge_has_language,
         {
-            "rag": "rag",  
+            "call_rag": "call_rag",  
             "end": END  
         }
     )
 
-    workflow.add_edge("rag", "personality")
+    workflow.add_edge("call_rag", "personality")
 
     workflow.add_edge("personality", END)
 

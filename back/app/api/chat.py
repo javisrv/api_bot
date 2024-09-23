@@ -36,7 +36,7 @@ def get_answer(request: ChatRequest) -> ChatResponse:
                                         ¡Hola! Soy tu asistente conversacional para el challenge de Pi Consulting 😊. 
                                         Estoy para ayudarte a responder cualquier duda que tengas. 
                                         ¡Preguntame todo lo que necesites! 
-                                        Para empezar me encantaría que me dijeras tu nombre o pseudónimo.
+                                        Para empezar me encantaría que me dijeras tu nombre.
                                         """
                             }]
     # Si existe la sesión, se recuperan los datos almmacenados hasta el momento
@@ -64,13 +64,7 @@ def get_answer(request: ChatRequest) -> ChatResponse:
     logger.debug(f"Entrando en el flujo de nodos.")
     try:
         answer = load_graph().invoke(inputs)
-    except Exception as e:
-        logger.error(f"Error al invocar el LLM: {e}")
-        answer = inputs
-        answer["agent_outcome"] = "Perdón, tuvimos un problema técnico. Por favor, intentá más tarde."
-        
-    logger.debug(f"Respuesta final del bot: {answer['agent_outcome']}")
-    usr_messages = UsrMessages(
+        usr_messages = UsrMessages(
             session_id=request.session_id,
             user_name=answer["user_name"],
             user_message=answer["input"],
@@ -79,9 +73,16 @@ def get_answer(request: ChatRequest) -> ChatResponse:
             tokens_used=answer["tokens_used"],
             state=answer["partial_states"]
             )
-    logger.debug(f"Guardando datos en la tabla 'messages'")
-    db_engine.save(usr_messages)
+        logger.debug(f"Guardando datos en la tabla 'messages'")
+        db_engine.save(usr_messages)
 
+    except Exception as e:
+        logger.error(f"Error al invocar el LLM: {e}")
+        answer = inputs
+        answer["agent_outcome"] = "Perdón, tuvimos un problema técnico. Por favor, intentá más tarde." 
+    
+    logger.debug(f"Respuesta final del bot: {answer['agent_outcome']}")
+    
     return ChatResponse(
             session_id=request.session_id,
             respuesta=answer["agent_outcome"]

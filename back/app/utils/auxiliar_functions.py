@@ -74,6 +74,7 @@ def get_prompt(inputs: dict, prompt_name: str, pydantic_object=None) -> tuple:
     else:
         prompt_template = PromptTemplate.from_template(template=templates[prompt_name])
         prompt = prompt_template.format(**inputs)
+        print(prompt)
     logger.debug(f"Prompt instanciado.")
     return prompt, parser if pydantic_object else None
 
@@ -222,8 +223,8 @@ def edge_has_language(inputs) -> str:
     """
     logger.debug(f"Entrando a 'edge_has_language'. Sus inputs son: {inputs["language"]}")
     if inputs["language"]:
-        logger.debug("Respuesta del conditional_edge 'edge_has_language': 'rag'")
-        return "rag"
+        logger.debug("Respuesta del conditional_edge 'edge_has_language': 'call_rag'")
+        return "call_rag"
     else:
         logger.debug("Respuesta del conditional_edge 'edge_has_language': 'end'")
         return "end"
