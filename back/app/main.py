@@ -30,8 +30,11 @@ Funciones:
     session() -> str: Un endpoint de verificación de salud que devuelve la cadena "OK".
 
 """
+faiss_file = os.path.join(PATH_DB, 'index.faiss')
+pkl_file = os.path.join(PATH_DB, 'index.pkl')
 
-create_vdb(PATH_DOC, PATH_DB)
+if not os.path.exists(faiss_file) or not os.path.exists(pkl_file):
+    create_vdb(PATH_DOC, PATH_DB)
 
 app = FastAPI(
     title=FASTAPI_NAME,
