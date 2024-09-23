@@ -82,4 +82,4 @@ Una vez que se corre el `docker-compose` el usuario puede comenzar a interactuar
 A partir de este punto, el usuario puede realizar preguntas al bot en el idioma que prefiera. El flujo de nodos detecta automáticamente el idioma de las preguntas y garantiza que las respuestas sean generadas en el mismo idioma. El sistema utiliza un enfoque `RAG` (Retrieved Augmented Generation) para buscar información relevante en la base de datos y generar respuestas precisas basadas en los documentos procesados.
 
 # Flujo de nodos:
-![Flujo de nodos](docs/flujo_nodos.png)
+![Flujo de nodos](back/docs/flujo_nodos.png)
