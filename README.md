@@ -7,44 +7,58 @@ El repositorio incluye scripts de Python, un archivo requirements.txt, un Docker
 
 # Estructura del repositorio
 ```
-├── .vscode
-       ├── launch.json
-├── api
-       ├── chat.py
-       ├── graph.py
-├── db
-       ├── orm 
-           ├── orm.py
-           ├── orm_models.py
-       ├── vector_db
-           ├── index.faiss
-           ├── index.pkl
-           ├── vector_db.py
-├── docs          
-       ├── documento.docx 
-       ├── flujo_nodos.png
-       ├── preguntas_test.docx
-       ├── prompts.json
+├── back
+       ├── app
+              ├── .vscode
+                     ├── launch.json    
+              ├── api
+                     ├── chat.py
+                     ├── graph.py
+              ├── db
+                     ├── orm 
+                         ├── orm.py
+                         ├── orm_models.py
+              ├── vdb
+                     ├── data
+                     ├── vector_db.py
+              ├── docs          
+                     ├── documento.docx 
+                     ├── flujo_nodos.png
+                     ├── preguntas_test.docx
+                     ├── prompts.json
+              ├── models
+                     ├── agent_state.py
+                     ├── dataclasses.py
+              ├── models
+                     ├── call_rag.py
+                     ├── personality.py
+                     ├── request_language.py
+                     ├── request_name.py
+                     ├── run.py
+              ├── rutas
+                     ├── chat.py
+              ├── utils.py
+                     ├── auxiliar_functions.py
+                     ├── functions.py
+                     ├── logger.py
+                     ├── security.py
+              ├── main.py
+              ├── requirements.txt
+       ├── DockerFile
+
 ├── front
-       ├── functions.py
-       ├── main.py
-├── models
-       ├── agent_state.py
-       ├── dataclasses.py
-├── rutas
-       ├── chat.py
-├── dataclasses.py
-       ├── auxiliar_functions.py
-       ├── functions.py
-       ├── logger.py
-       ├── security.py
-├── .env
+       ├── app
+              ├── functions.py
+              ├── main.py
+              ├── requirements.txt
+       ├── DockerFile
+├── .env.example
 ├── .gitignore
+├── back.env.example
 ├── docker-compose.yml
-├── Dockerfile
-├── main.py
+├── front.env.example
 ├── README.md
-├── requirements.txt
+
 ```
 # ¿Cómo ejecuto este repositorio?
 Para ejecutar este repositorio, sigue estos pasos:
