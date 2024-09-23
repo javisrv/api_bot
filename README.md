@@ -49,6 +49,8 @@ El repositorio incluye scripts de Python, un archivo requirements.txt, un Docker
 # ¿Cómo ejecuto este repositorio?
 Para ejecutar este repositorio, sigue estos pasos:
 
+`Completar las variables ambiente (.env):`
+
 `Instalar Docker:` 
 Asegurarse de tener Docker instalado en el sistema.
 
@@ -57,7 +59,7 @@ Inicia el entorno: Ejecutar el archivo docker-compose.yml para crear el entorno 
 
 `Ejecución de la API - Código a ejecutar en la terminal:`
 ```
-docker
+docker-compose up
 ```
 
 # Descripción de la solución:
