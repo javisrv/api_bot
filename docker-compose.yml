@@ -1,6 +1,5 @@
-version: '3.8'
 services:
-  db:
+  postgres:
     image: postgres:16
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -8,19 +7,42 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
-
-  orm:
+  
+  backend:
     build:
-      context: .
-      dockerfile: Dockerfile.python
+      context: ./back
+      dockerfile: Dockerfile
+    env_file:
+      - back.env
+    ports:
+      - "8001:8000"
     depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      POSTGRES_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-    command: ["python", "db/orm/orm.py"]
+      - "postgres"
+    volumes:
+      - vectordb:/opt/app/db/vdb/data
+    healthcheck:
+      test: ["CMD-SHELL", "python3", "-c", "import requests; response = requests.get('http://localhost:8000/health'); exit(0) if response.status_code == 200 else exit(1)"]
+
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    env_file:
+      - front.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "python3", "-c", "import requests; response = requests.get('http://localhost:8000/health'); exit(0) if response.status_code == 200 else exit(1)"]
+    
+volumes:
+  postgres_data:
+  vectordb:
