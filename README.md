@@ -63,7 +63,7 @@ docker
 # Descripción de la solución:
 Una vez que se corre el `docker-compose` el usuario puede comenzar a interactuar con el bot en el `front-end` desarrollado con `Streamlit`. El bot primero solicita el nombre del usuario, lo cual genera una nueva sesión que se almacena en la base de datos, en la tabla `sessions`. A su vez se guarda la interacción en la tabla `messages`, ya que se usará dicha tabla en el futuro para rastrear todas las interacciones ocurridas para un mismo `session_id`.
 
-A partir de este punto, el usuario puede realizar preguntas al bot en el idioma que prefiera. El flujo de nodos detecta automáticamente el idioma de las preguntas y garantiza que las respuestas sean generadas en el mismo idioma. El sistema utiliza un enfoque *RAG* (Retrieved Augmented Generation) para buscar información relevante en la base de datos y generar respuestas precisas basadas en los documentos procesados.
+A partir de este punto, el usuario puede realizar preguntas al bot en el idioma que prefiera. El flujo de nodos detecta automáticamente el idioma de las preguntas y garantiza que las respuestas sean generadas en el mismo idioma. El sistema utiliza un enfoque `RAG` (Retrieved Augmented Generation) para buscar información relevante en la base de datos y generar respuestas precisas basadas en los documentos procesados.
 
 # Flujo de nodos:
 ![Flujo de nodos](docs/flujo_nodos.png)
