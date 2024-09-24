@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends
+from utils.logger import logger
 from db.vdb.vector_db import create_vdb
 from rutas.chat import router_chat
 from utils.security import verify_api_key
@@ -30,11 +31,13 @@ Funciones:
     session() -> str: Un endpoint de verificación de salud que devuelve la cadena "OK".
 
 """
-faiss_file = os.path.join(PATH_DB, 'index.faiss')
-pkl_file = os.path.join(PATH_DB, 'index.pkl')
+faiss_file = os.path.exists(os.path.join(os.getcwd(), PATH_DB,'index.faiss')) # flase
+pkl_file = os.path.exists(os.path.join(os.getcwd(), PATH_DB,'index.pkl')) # true
 
-if not os.path.exists(faiss_file) or not os.path.exists(pkl_file):
+if not faiss_file or not pkl_file:
     create_vdb(PATH_DOC, PATH_DB)
+else:
+    logger.info(f"La base de datos vectorial ya estaba creada.")
 
 app = FastAPI(
     title=FASTAPI_NAME,

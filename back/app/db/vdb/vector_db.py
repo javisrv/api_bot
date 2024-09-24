@@ -1,5 +1,7 @@
 import os
 from dotenv import load_dotenv
+import time
+from utils.logger import logger
 from langchain_community.document_loaders import Docx2txtLoader
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -50,7 +52,8 @@ def create_vdb(path_doc, path_db):
     Excepciones:
         Puede lanzar excepciones si hay errores en la carga del documento o en la creación de la base de datos.
     """
-    print(path_doc)
+    start_time = time.time()
+    logger.info("Creando base de datos vectorial.")
     loader = Docx2txtLoader(path_doc)
     data = loader.load()
     chunk_size = calcular_max_caracteres(data[0].page_content)
@@ -63,9 +66,10 @@ def create_vdb(path_doc, path_db):
     embeddings = get_model(model_type="embeddings")
     vdb = FAISS.from_documents(chunks, embeddings)
     vdb.save_local(path_db)
+    logger.info(f"Base de datos vectorial creada en {round(time.time() - start_time, 2)} segundos.")
 
 if __name__ == "__main__":
     if PATH_DOC and PATH_DB:
         create_vdb(PATH_DOC, PATH_DB)
     else:
-        print("Las variables de entorno PATH_DOC o PATH_DB no están definidas.")
+        logger.info(f"Las variables de entorno PATH_DOC o PATH_DB no están definidas.")
