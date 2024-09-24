@@ -66,7 +66,7 @@ def create_vdb(path_doc, path_db):
     embeddings = get_model(model_type="embeddings")
     vdb = FAISS.from_documents(chunks, embeddings)
     vdb.save_local(path_db)
-    logger.info(f"Base de datos vectorial creada en {round(time.time() - start_time, 2)} segundos.")
+    return logger.info(f"Base de datos vectorial creada en {round(time.time() - start_time, 2)} segundos.")
 
 if __name__ == "__main__":
     if PATH_DOC and PATH_DB:

@@ -31,8 +31,8 @@ Funciones:
     session() -> str: Un endpoint de verificación de salud que devuelve la cadena "OK".
 
 """
-faiss_file = os.path.exists(os.path.join(os.getcwd(), PATH_DB,'index.faiss')) # flase
-pkl_file = os.path.exists(os.path.join(os.getcwd(), PATH_DB,'index.pkl')) # true
+faiss_file = os.path.exists(os.path.join(os.getcwd(), PATH_DB,'index.faiss'))
+pkl_file = os.path.exists(os.path.join(os.getcwd(), PATH_DB,'index.pkl'))
 
 if not faiss_file or not pkl_file:
     create_vdb(PATH_DOC, PATH_DB)
