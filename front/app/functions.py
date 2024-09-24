@@ -11,7 +11,7 @@ url = FASTAPI_URL
 
 payload = {
     "session_id": "",
-    "input": ""
+    "question": ""
 }
 
 headers = {
@@ -27,7 +27,7 @@ def write_stream(text: str) -> Generator:
 
 
 def get_response(prompt: str, conversation_id) -> dict:
-    payload["input"] = prompt
+    payload["question"] = prompt
     payload["session_id"] = conversation_id
     response = post(url, json=payload, headers=headers).json()
     return response
