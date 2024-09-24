@@ -58,6 +58,7 @@ El repositorio incluye scripts de Python, un archivo requirements.txt, un Docker
 ├── docker-compose.yml
 ├── front.env.example
 ├── README.md
+├── pi_collection.postman_collection.json
 
 ```
 # ¿Cómo ejecuto este repositorio?
