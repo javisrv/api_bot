@@ -33,6 +33,8 @@ Funciones:
 """
 faiss_file = os.path.exists(os.path.join(os.getcwd(), PATH_DB,'index.faiss'))
 pkl_file = os.path.exists(os.path.join(os.getcwd(), PATH_DB,'index.pkl'))
+logger.debug(f"Directorio de 'index.faiss': {os.path.join(os.getcwd(), PATH_DB,'index.faiss')}")
+logger.debug(f"Directorio de 'index.pkl': {os.path.join(os.getcwd(), PATH_DB,'index.pkl')}")
 
 if not faiss_file or not pkl_file:
     create_vdb(PATH_DOC, PATH_DB)

@@ -53,7 +53,7 @@ def get_answer(request: ChatRequest) -> ChatResponse:
         language = last_message["language"]
 
     inputs = {
-        "input": request.input,
+        "input": request.question,
         "input_translated": None,
         "user_name": user_name,
         "chat_history": history_message,

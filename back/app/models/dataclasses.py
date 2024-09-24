@@ -8,9 +8,9 @@ class ChatRequest(BaseModel):
         description="ID de la sesión"
     )
 
-    input: str = Field(
+    question: str = Field(
         default=...,
-        description="Mensaje del usuario"
+        description="Pregunta del usuario"
     )
 
 class ChatResponse(BaseModel):
